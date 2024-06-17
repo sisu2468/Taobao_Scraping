@@ -1,78 +1,114 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
-import logging
+from selenium.webdriver.common.keys import Keys
+from urllib.parse import urlparse, parse_qs
+import time
+import pandas as pd
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Path to your WebDriver executable
-webdriver_service = Service(r'C:\Users\samco\Downloads\chromedriver-win64\chromedriver-win64\chromedriver.exe')
-
-# Set up the WebDriver (temporarily removing headless mode for debugging)
 options = webdriver.ChromeOptions()
-# options.add_argument('--headless')  # Commented out headless mode
-options.add_argument('--disable-gpu')
-driver = webdriver.Chrome(service=webdriver_service, options=options)
+options.add_argument('--ignore-certificate-errors')
+options.add_argument('--ignore-ssl-errors')
 
-def scrape_mens_clothing():
-    try:
-        # Open Taobao
-        driver.get("https://world.taobao.com/")
-        
-        # Wait for the search bar to be present
-        search_box = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "a2141.241046-hk.searchbar.i0.41ca5adbRkJcgW"))
-        )
-        logger.print("Found Search Bar")
 
-        
-        
-        # Enter the search term for men's clothing
-        search_box.send_keys("男装")  # Chinese characters for men's clothing
-        search_box.send_keys(Keys.RETURN)
-        
-        # Wait for the search results to load
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "item J_MouserOnverReq"))
-        )
-        
-        # Scroll down to load more items
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "item J_MouserOnverReq"))
-        )
-        
-        # Extract page content
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        
-        # Scrape item names
-        item_names = []
-        items = soup.find_all("div", class_="item J_MouserOnverReq")
-        for item in items:
-            name_tag = item.find("a", class_="J_ClickStat")
-            if name_tag:
-                item_names.append(name_tag.get("title"))
-        
-        return item_names
+driver = webdriver.Chrome(options=options)
+    
 
-    except Exception as e:
-        logger.error("An error occurred during scraping:", exc_info=True)
-        # Log the page source for debugging
-        with open("page_source.html", "w", encoding="utf-8") as f:
-            f.write(driver.page_source)
-        return []
+    # Navigate to the website
+url = "https://item.taobao.com/item.htm?id=754835047515&ali_trackid=2:mm_26632943_457000242_108857250342:1718433646_046_315558778&rid=2852359894&spm=a21412.affiliate.promote.2852359894&union_lens=lensId:OPT@1718433641@21508ab6_0de8_1901aa075c6_305e@01@eyJmbG9vcklkIjo2OTE5OH0ie;recoveryid:046_998718587@1718433646991&relationId=2852359894&bxsign=tbkUGJpC3i7qVNdAikgS5nIIlASg-vKw8Si171WZ70J9MtQOWJ-cbOlphFRWbcuF1pSHm5qi8pePVeP-9saQ_EQIIT0c4gwKQCz6g4jyeQi8-mEPJtzO0InJw2g5oGlyxRTtFG4avsmxnvecAiCp_WDfOwxTo0xGGVUsX8xRbK8NRfydeOef1_NVxyXUNexPkHt&skuId=5259956309620"
+driver.get(url)    
 
-    finally:
-        driver.quit()
+print("LOGIN.......")
+time.sleep(60)
+parsed_url = urlparse(url)
+query_params = parse_qs(parsed_url.query)
 
-# Scrape men's clothing item names
-mens_clothing_items = scrape_mens_clothing()
-print("Men's Clothing Items:")
-for item in mens_clothing_items:
-    print(item)
+id_value = query_params.get('id', [None])[0]
+
+print(id_value)
+
+
+
+Pric = driver.find_element(By.CLASS_NAME, "originPrice")
+
+# product_nam = driver.find_element(By.CLASS_NAME, "ItemHeader--mainTitle--1rJcXZz f-els-2")
+# print(search_box.tag_name)
+# product_price=Pric.text
+# product_name=product_nam.text
+
+# print("product name", product_name)
+print(Pric)
+
+# Input the text in the search box
+# search_box.send_keys("男装")
+# button.click()
+
+# promo_links = driver.find_elements(By.CLASS_NAME, "Card--doubleCardWrapper--L2XFE73")
+# product_names = []
+# prices=[]
+# original_window = driver.window_handles[0]
+
+# stop_scraping = False
+
+
+# for promo_link in promo_links:
+#     if stop_scraping:
+#         print("breaking")
+#         break
+#     # Click on the promo link to open a new window
+#     promo_link.click()
+#     # Wait for the new window to load
+#     WebDriverWait(driver, 10).until(EC.new_window_is_opened)
+    
+#       # Switch to the new window
+#     new_window = [window for window in driver.window_handles if window != original_window][0]
+#     driver.switch_to.window(new_window)
+#     print("waiting for the new window to load......")
+#     time.sleep(40)
+#     # Scrape the product name
+#     print()
+#     product_name = driver.find_element(By.CLASS_NAME, "ItemHeader--mainTitle--1rJcXZz")
+#     image_url = driver.find_elements(By.CLASS_NAME, "PicGallery--thumbnailPic--1spSzep")
+#     price = driver.find_element(By.CLASS_NAME, "Price--priceText--1oEHppn")
+    
+#     # product_number = driver.find_element(By.ID, "pc_detail.29232929/evo401271b517998.202205.i1.56c67dd6WaKSRs")
+    
+
+#     # image1 = image_url[0].get_attribute("src")
+#     # image2 = image_url[1].get_attribute("src")
+#     # image3 = image_url[2].get_attribute("src")
+#     # image4 = image_url[3].get_attribute("src")
+#     # image5 = image_url[4].get_attribute("src")
+#     # print("image 1 uri: ", image1)
+#     product_names.append(product_name.text)
+#     prices.append(price.text)
+#     print(image_url)
+#     # product_names.append(product_name)
+#     print(product_names)
+#     print(prices)
+#     # print("product id: ", product_id)
+#     # Switch back to the original window
+    
+#      # Close the new window
+#     driver.close()
+    
+#     # Switch back to the original window
+#     driver.switch_to.window(original_window)
+#     n=input("want to quit??")
+#     if n=="yes":
+#         stop_scraping=True
+#     else:
+#         continue
+
+# data = {
+#     "PRODUCT NAME": product_names,
+#     "PRICE": prices
+# }
+# df = pd.DataFrame(data)
+
+# # Save the DataFrame to a CSV file
+# csv_file_path = 'products.csv'
+# df.to_csv(csv_file_path, index=False)
+
+# print(f"Data successfully saved to {csv_file_path}")
